@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% macro hierarchy(employee) %}
+    <b>{{employee.full_name}}</b> - {{ employee.position }}<br>
+    {% if employee.subordinates %}
+        <ul>
+            {% for subordinate in employee.subordinates %}
+                <li>{{ hierarchy(subordinate) }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}
+
+{% block content %}
+    {% if employees %}
+        <ul>
+            {% for employee in employees %}
+                {{ hierarchy(employee) }}
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

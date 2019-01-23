@@ -1,0 +1,7 @@
+CEO,1,15000
+Country Manager,5,10000
+Regional Manager,8,8000
+Branch Manager,8,5000
+Department Head,5,2500
+Team Lead,5,1500
+Specialist,7,1000
