@@ -1,0 +1,25 @@
+{
+  "name": "employees",
+  "description": "test assignment",
+  "main": "index.js",
+  "authors": [
+    "vhulevych"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/Longneko/employees",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "v4.1.3",
+    "jquery": "^3.3.1"
+  },
+  "resolutions": {
+    "bootstrap": "v4.1.3"
+  }
+}

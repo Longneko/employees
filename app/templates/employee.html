@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>New Employee</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        {% for fieldname in ['full_name', 'position', 'hire_date', 'salary', 'supervisor_id'] %}
+            {% with field = form|attr(fieldname) %}
+                <p>
+                    {{ field.label }}<br>
+                    {{ field(size=32)}}<br>
+                    <span class="errors" for="{{ field.id }}">
+                        {% for error in field.errors %}
+                            <span>[{{ error }}]</span>
+                        {% endfor %}
+                    </span>
+                </p>
+            {% endwith %}
+        {% endfor %}
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

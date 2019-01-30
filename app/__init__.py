@@ -10,5 +10,9 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login = LoginManager(app)
 login.login_view = 'login'
+login.login_message_category = 'warning'
 
-from app import routes, models
+from app import routes, routes_api, models, errors
+from app.json_encoder import CustomJSONEncoder
+
+app.json_encoder = CustomJSONEncoder

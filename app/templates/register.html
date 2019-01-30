@@ -8,7 +8,7 @@
             {% with field = form|attr(fieldname) %}
                 <p>
                     {{ field.label }}<br>
-                    {{ field(size=32)}}<br>
+                    {{ field(size=32, autocomplete='off')}}<br>
                     {% for error in field.errors %}
                         <span style="color: red;">[{{ error }}]</span>
                     {% endfor %}

@@ -25,7 +25,7 @@ class DbSeeder(object):
                     'salary': int(salary),
                 })
         self.positions = positions
-        self.depth_max = len(positions) - 1
+        self.depth_max = len(positions)
         self.session = session
 
     def employee_data(self, lvl):
@@ -44,11 +44,11 @@ class DbSeeder(object):
     def hierarchy(self, depth_max=None, lvl=0):
         """Returns an Employee object with recursively populated subordinates"""
 
-        if not depth_max:
+        if depth_max is None:
             depth_max = self.depth_max
 
         subordinates = []
-        if lvl < depth_max:
+        if lvl < depth_max - 1:
             for i in range(self.positions[lvl+1]['employees']):
                 subordinates.append(self.hierarchy(depth_max, lvl+1))
 
@@ -57,11 +57,11 @@ class DbSeeder(object):
     def seed(self, depth=None, auto_commit=False):
         """Adds an employee hierarchy to the db session starting from the top level.
         Commits if auto_commit is True."""
-        if not depth:
+        if depth is None:
             depth = self.depth_max
 
-        if depth > self.depth_max:
-            raise ValueError('depth cannot be higher than number of position levels')
+        if depth > self.depth_max or depth < 1:
+            raise ValueError('depth cannot be less than 1 or exceed number of position levels')
 
         for i in range(self.positions[0]['employees']):
             self.session.add(self.hierarchy(depth_max=depth))

@@ -1,0 +1,23 @@
+{
+  "name": "employees",
+  "version": "1.0.0",
+  "description": "test assignment",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "bower": "^1.8.8"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Longneko/employees.git"
+  },
+  "author": "vhulevych",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Longneko/employees/issues"
+  },
+  "homepage": "https://github.com/Longneko/employees#readme"
+}

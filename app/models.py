@@ -1,24 +1,46 @@
-from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db, login
-
+from sqlalchemy.orm import validates
+from app import db, login, exceptions
 
 class Employee(db.Model):
     FULL_NAME_MAX_LEN = 120
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(64), nullable=False, index=True)
     position = db.Column(db.String(120), nullable=False, index=True)
-    hire_date = db.Column(db.DateTime, nullable=False)
+    hire_date = db.Column(db.Date, nullable=False)
     salary = db.Column(db.Integer, nullable=False)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=True,
                               default=None)
     subordinates = db.relationship('Employee', backref=db.backref('supervisor', 
-                                    remote_side=[id], lazy=False))
+                                    remote_side=[id], lazy=True))
+
+    def transfer_subs(self, replacement):
+        """Transfer all subordinates to another supervisor. Commits to db if auto_commit == True"""
+        # Creating list copy because changing supervisor immediately removes subordinate from the
+        # subordinates list
+        subs = [x for x in self.subordinates]
+        for sub in subs:
+            sub.supervisor = replacement
+            
+    def _get_all_subordinates(self):
+        for s in self.subordinates:
+            yield s
+            yield from s._get_all_subordinates()
+
+    @validates('supervisor')
+    def validate_supervisor(self, key, supervisor):
+        for sub in self._get_all_subordinates():
+            if sub == supervisor:
+                raise exceptions.HierarchyLoopError(self, supervisor)
+        return supervisor
 
     def __repr__(self):
         return '<{clsname} [{id}]{name}>'.format(clsname=self.__class__.__name__, id=self.id,
                                                  name=self.full_name)
+
+    def __str__(self):
+        return '[{id}] {name}'.format(id=self.id, name=self.full_name)
 
 
 class User(UserMixin, db.Model):
