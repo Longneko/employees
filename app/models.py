@@ -1,13 +1,33 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import validates
+from sqlalchemy.inspection import inspect
 from app import db, login, exceptions
 
-class Employee(db.Model):
+class ModelJSONifiable():
+    """A mixin class that provides basic funcitonal to produce JSON encoding compliant dictionaries
+    by omitting Model relationship attributes to avoid circular references or loading 
+    unnecessary objects.
+    """
+    def relationships(self):
+        cls = self.__class__
+        return [str(rel)[len(cls.__name__)+1:] for rel in inspect(cls).relationships]
+
+    def toJSONifiable(self, no_relationships=True):
+        """Returns a DB Model child object as dictionary. Excludes relationship attributes if
+        no_relationships == True (to avoid circular references)."""
+        relationships = [] if no_relationships else self.relationships()
+        d = {key: val for key, val in self.__dict__.items() if not key.startswith('_')
+            and not key in relationships}
+        return d
+
+
+class Employee(ModelJSONifiable, db.Model):
     FULL_NAME_MAX_LEN = 120
+    POSITION_NAME_MAX_LEN = 120
     id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String(64), nullable=False, index=True)
-    position = db.Column(db.String(120), nullable=False, index=True)
+    full_name = db.Column(db.String(FULL_NAME_MAX_LEN), nullable=False, index=True)
+    position = db.Column(db.String(POSITION_NAME_MAX_LEN), nullable=False, index=True)
     hire_date = db.Column(db.Date, nullable=False)
     salary = db.Column(db.Integer, nullable=False)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=True,
@@ -34,6 +54,16 @@ class Employee(db.Model):
                 raise exceptions.HierarchyLoopError(self, supervisor)
         return supervisor
 
+    def toJSONifiable(self, no_relationships=True):
+        """Extends the corresponding ModelJSONifiable method by adding following fields:
+          subordinates_id: list of the ids of the subordiantes
+          supervisor: string representation of supervisor
+        """
+        d = super().toJSONifiable(no_relationships=True)
+        d['subordinates_id'] = [s.id for s in self.subordinates]
+        d['supervisor'] = str(self.supervisor)
+        return d
+
     def __repr__(self):
         return '<{clsname} [{id}]{name}>'.format(clsname=self.__class__.__name__, id=self.id,
                                                  name=self.full_name)
@@ -44,9 +74,10 @@ class Employee(db.Model):
 
 class User(UserMixin, db.Model):
     USERNAME_MAX_LEN = 64
+    EMAIL_MAX_LEN = 64
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(USERNAME_MAX_LEN), nullable=False, index=True, unique=True)
-    email = db.Column(db.String(120), nullable=False, index=True, unique=True)
+    email = db.Column(db.String(EMAIL_MAX_LEN), nullable=False, index=True, unique=True)
     password_hash = db.Column(db.String(128), nullable=False)
 
     def set_password(self, password):

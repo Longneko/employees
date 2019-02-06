@@ -44,6 +44,15 @@ class EmployeeForm(FlaskForm):
     supervisor_id = IntegerField('Supervisor ID', validators=[NumberRange(min=1), Optional()])
     submit = SubmitField('Submit')
 
+    def validate_supervisor_id(self, supervisor_id):
+        try:
+            id = int(supervisor_id.data)
+        except ValueError:
+            pass
+        if not Employee.query.get(id):
+            raise ValidationError('Employee with such ID doesn\'t exist!')
+
+
 class EmployeeDeleteForm(FlaskForm):
     id = IntegerField('ID', widget=HiddenInput(), validators=[NumberRange(min=1)])
     replacement_id = IntegerField(
@@ -56,7 +65,7 @@ class EmployeeDeleteForm(FlaskForm):
     def validate_replacement_id(self, replacement_id):
         try:
             id = int(replacement_id.data)
-        except:
-            return
+        except ValueError:
+            pass
         if not Employee.query.get(id):
             raise ValidationError('Employee with such ID doesn\'t exist!')

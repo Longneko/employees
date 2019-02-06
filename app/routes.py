@@ -118,3 +118,9 @@ def employee_delete():
     errors = {field.name: [err for err in field.errors] for field in form if field.errors}
 
     return jsonify(errors), 400
+
+# TESTING ONLY. TO BE DELETED
+@app.route('/tree', methods=['GET'])
+def tree():
+    return render_template('hierarchy.html')
+    
