@@ -8,7 +8,9 @@ from app.models import Employee
 from app.exceptions import HierarchyLoopError
 
 API_PREFIX = '/api'
+API_PUBLIC_PREFIX = '/api_public'
 CSRF_TOKEN_NAME = 'csrf_token'
+exclude_fields = [CSRF_TOKEN_NAME, 'submit']
 
 @app.route(API_PREFIX + '/employee/delete', methods=['POST'])
 @login_required
@@ -60,29 +62,31 @@ def api_get_object(classname):
     regular named arguments require full match.
     Automoatically omits the 'submit' args and the csrf_token related args.
     '''
-    exclude_fields = [CSRF_TOKEN_NAME, 'submit']
-    filters = []
-    filter_bys = {}
-    if request.method == 'POST':
-        kwargs = {key: val for key, val in request.form.items() if val != ''
-            and key not in exclude_fields}
-    else:
-        kwargs = {key: val for key, val in request.args.items() if val != ''
-            and key not in exclude_fields}
-
-    get_model = {
+    allowed_models = {
         'employee': Employee
     }
-    get_column = {
-        'employee': lambda col: getattr(Employee, col)
-    }
+    try:
+        cls = allowed_models[classname]
+    except KeyError:
+        return jsonify(errors=['Unknown object type']), 400
+    
+    filters = []
+    filter_bys = {}
+    
+    if request.method == 'POST':
+        query_data = {key: val for key, val in request.form.items() if val != ''
+            and key not in exclude_fields}
+    else:
+        query_data = {key: val for key, val in request.args.items() if val != ''
+            and key not in exclude_fields}
 
-    for key, val in kwargs.items():
+    for key, val in query_data.items():
         if key.startswith('_'):
-            filters.append(get_column[classname](key[1:]).like('%' + str(val) + '%'))
+            col = getattr(cls, key[1:])
+            filters.append(col.like('%' + str(val) + '%'))
         else:
             filter_bys[key] = val
 
-    result = get_model[classname].query.filter_by(**filter_bys).filter(*filters).all()
+    entries = cls.query.filter_by(**filter_bys).filter(*filters).all()
 
-    return jsonify(result), 200
+    return jsonify(entries), 200
