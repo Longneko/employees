@@ -58,9 +58,8 @@ def register():
 @app.route('/manage')
 @login_required
 def manage():
-    employees = Employee.query.all()
     form = EmployeeDeleteForm()
-    return render_template('manage.html', title='Manage', employees=employees, form=form)
+    return render_template('manage.html', title='Manage', form=form)
 
 @app.route('/employee/new', defaults={'id': None}, methods=['GET', 'POST'])
 @app.route('/employee/<int:id>', methods=['GET', 'POST'])
@@ -119,7 +118,3 @@ def employee_delete():
     errors = {field.name: [err for err in field.errors] for field in form if field.errors}
 
     return jsonify(errors), 400
-
-@app.route('/test')
-def test():
-    return jsonify(Employee.query.get(1))

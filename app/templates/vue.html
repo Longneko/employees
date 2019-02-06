@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="https://vuejs.org/js/vue.js"></script> <!-- To be replaced with bower package -->
+{% endblock %}
+
+{% block style %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='vue.css') }}" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+    {% raw %}
+        <!-- grid template -->
+        <script type="text/x-template" id="grid-sortable-template">
+          <table>
+            <thead>
+              <tr>
+                <th v-for="key in columns"
+                  @click="sortBy(key)"
+                  :class="{ active: sortKey == key }">
+                  {{ key | capitalize | replace("_", " ") }}
+                  <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="entry in sortedData">
+                <td v-for="key in columns">
+                  {{entry[key]}}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </script>
+
+        <!-- root element -->
+        <div id="demo">
+          <form id="search" @submit.prevent="runSearch">
+            <h3>Search</h3>
+            <span v-for="field in searchFields">
+              <input :placeholder="field | replace('_',' ')" v-model="searchQuery[field]" :key="field"/>
+            </span>
+            <button type="submit">Search</button>
+          </form>
+          <grid-sortable
+            :data="gridData"
+            :columns="gridColumns.map(x => x['name'])"
+            :filters="searchQuery">
+          </grid-sortable>
+        </div>
+    {% endraw %}
+    {% block vuescripts %}
+        <script> const EMPLOYEE_URL = "{{ url_for('api_get_object', classname='employee') }}" </script>
+        <script src="{{ url_for('static', filename='scripts/vue.js')}}"></script>
+    {% endblock %}
+
+{% endblock %}

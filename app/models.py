@@ -17,10 +17,9 @@ class Employee(db.Model):
 
     def transfer_subs(self, replacement):
         """Transfer all subordinates to another supervisor. Commits to db if auto_commit == True"""
-        # Creating list copy because changing supervisor immediately removes subordinate from the
+        # Uses reversed list because changing the supervisor immediately removes sub from the
         # subordinates list
-        subs = [x for x in self.subordinates]
-        for sub in subs:
+        for sub in reversed(self.subordinates):
             sub.supervisor = replacement
             
     def _get_all_subordinates(self):

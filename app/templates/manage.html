@@ -1,23 +1,30 @@
 {% extends 'base.html' %}
 
 {% set ERR_GENERAL_ID = 'ERR_GENERAL_ID' %}
-{% set form_delete_id = 'form-delete' %}
+{% set FORM_DELETE_ID = 'form-delete' %}
+{% set MODAL_DELETE_ID = 'modal-delete' %}
 
 {% block scripts scoped %}
     {{ super() }}
     <script>
         const ERR_GENERAL_ID = "{{ ERR_GENERAL_ID }}";
-        const FORM_DELETE_ID = "{{ form_delete_id }}";
+        const FORM_DELETE_ID = "{{ FORM_DELETE_ID }}";
+        const MODAL_DELETE_ID = "{{ MODAL_DELETE_ID }}";
         const API_URL_FLASH = "{{ url_for('api_flash') }}";
+        const EMPLOYEE_URL = "{{ url_for('api_get_object', classname='employee') }}"
     </script>
     <script src="{{ url_for('static', filename='scripts/forms.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/manage.js') }}"></script>
 {% endblock %}
 
+{% block style %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='style/manage.css') }}" rel="stylesheet"/>
+{% endblock %}
 
 {% block content scoped %}
     {% block modal scoped %}
-        <div id="modal-delete" class="modal" tabindex="-1" role="dialog">
+        <div id="{{ MODAL_DELETE_ID }}" class="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -27,7 +34,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form id="{{ form_delete_id }}" action="{{ url_for('api_employee_delete') }}" method="post">
+                        <form id="{{ FORM_DELETE_ID }}" action="{{ url_for('api_employee_delete') }}" method="post">
                             {{ form.hidden_tag() }}
                             {% for fieldname in ['replacement_id'] %}
                                 {% with field = form|attr(fieldname) %}
@@ -58,33 +65,55 @@
     {% endblock %}
 
     <a href="{{ url_for('employee') }}">Add new employee</a>
-    <h1>Employee Table</h1>
-    {% block table %}
-        {% if employees %}
-            {% with keys = ['id', 'full_name', 'position', 'salary', 'hire_date', 'supervisor', 'actions'] %}
-                <table class="table table-hover">
-                    <thead class="thead-dark">
-                        <tr>
-                            {% for key in keys %}
-                                <th scope=col>{{ key|replace('_',' ')|trim|capitalize }} </th>
-                            {% endfor %}
-                        <tr>
-                    </thead>
-                    <tbody>
-                        {% for employee in employees %}
-                            <tr>
-                                {% for key in keys[:-1] %}
-                                    <td>{{ employee|attr(key) }}</td>
-                                {% endfor %}
-                                <td>
-                                    <a href="{{ url_for('employee', id=employee.id) }}">edit</a>
-                                    <a href="#" data-id={{ employee.id }} data-toggle="modal" data-target="#modal-delete" onclick="show_modal_delete({{ employee.id }});">delete</a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                <table>
-            {% endwith %}
-        {% endif %}
-    {% endblock %}
+    {% raw %}
+        <!-- grid template -->
+        <script type="text/x-template" id="grid-sortable-template">
+            <table class="table table-hover">
+                <thead class="thead-dark">
+                   <tr>
+                        <th v-for="key in columns"
+                            :class="{ active :sortKey == key }"
+                            @click="sortBy(key)">
+                            {{ key | capitalize | replace("_", " ") }}
+                            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'"></span>
+                        </th>
+                        <th>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="entry in sortedData">
+                        <td v-for="key in columns">
+                            {{entry[key]}}
+                        </td>
+                        <td>
+    {% endraw %}
+                            <a :href="{{ '\'' + url_for('employee', id='-1') + '\' | replace(\'-1\', entry[\'id\'])' }}">edit</a>
+                            <a href="#" :data-id="entry['id']" data-toggle="modal" data-target="#{{ MODAL_DELETE_ID }}" :onclick="'show_modal_delete(' + entry['id'] + ');'">delete</a>
+    {% raw %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </script>
+
+        <!-- root element -->
+        <div id="employee_table">
+            <form id="search" @submit.prevent="runSearch">
+                <h3>Search</h3>
+                <div class="input-group mb-3">
+                    <span class="mx-1" v-for="field in searchFields">
+                        <input class="form-control" :placeholder="field | replace('_',' ')" v-model="searchQuery[field]" :key="field"/>
+                    </span>
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+          </form>
+          <grid-sortable
+              :data="gridData"
+              :columns="gridColumns.map(x => x['name'])"
+              :filters="searchQuery">
+          </grid-sortable>
+        </div>
+    {% endraw %}
 {% endblock %}

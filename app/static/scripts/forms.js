@@ -31,10 +31,10 @@ function field_set_default(element) {
     if ( ['select', 'textarea', 'text', 'number', 'email', 'url', 'file'].includes(type) ) {
         $(element).val(default_val);
     }
-    if ( type == 'checkbox' ) {
+    if ( type === 'checkbox' ) {
         $(element).prop('checked', Boolean(default_val));
     }
-    if ( type == 'img' ) {
+    if ( type === 'img' ) {
         if ( default_val ) {
             $(element).prop('src', default_val);
         }
