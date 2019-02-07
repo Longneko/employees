@@ -10,7 +10,7 @@ from app.models import Employee, User
 @app.route('/index')
 def index():
     top_management = Employee.query.filter_by(supervisor_id=None).all()
-    return render_template('index.html', title='Hierarchy', employees=top_management)
+    return render_template('hierarchy.html', title='Hierarchy', employees=top_management)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -118,4 +118,3 @@ def employee_delete():
     errors = {field.name: [err for err in field.errors] for field in form if field.errors}
 
     return jsonify(errors), 400
-    

@@ -1,31 +1,55 @@
-<!-- item template -->
-<script type="text/x-template" id="item-template">
-  <li>
-    <div
-      :class="{bold: isFolder}"
-      @click="toggle"
-      @dblclick="changeType">
-      {{ model.name }}
-      <span v-if="isFolder">[{{ open ? '-' : '+' }}]</span>
+{% extends 'base.html' %}
+{% set EMPLOYEE_FETCH_URL = url_for('api_public_get_object', classname='employee') %}
+{% set EMPLOYEE_CHILDREN_REF = 'subordinates_id' %}
+
+{% block scripts scoped %}
+    {{ super() }}
+    <script>
+        const EMPLOYEE_FETCH_URL = "{{ EMPLOYEE_FETCH_URL }}"
+    </script>
+    <script src="{{ url_for('static', filename='scripts/hierarchy.js') }}"></script>
+{% endblock %}
+
+{% block style %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='style/hierarchy.css') }}" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+    {% raw %}
+    <!-- item template -->
+    <script type="text/x-template" id="item-template">
+        <li>
+            <div
+                @click="toggle">
+                {{ model.full_name }} <b>{{ model.position }}</b>
+                <span v-if="hasChildren">[{{ open ? '-' : '+' }}]</span>
+            </div>
+            <ul v-show="open" v-if="hasChildren">
+                <item
+                    class="item"
+                    v-for="(model, index) in children"
+                    :key="index"
+                    :model="model"
+                    :children-ref="childrenRef"
+                    :fetch-url="fetchUrl">
+                </item>
+            </ul>
+        </li>
+    </script>
+
+    <div class="p-2">
+        <h2>Employee</h2>
+        <!-- Vue root element -->
+        <ul id="employee-tree">
+            <item v-for="(item, index) in treeData"
+                class="item"
+                :key="index"
+                :model="item"
+        {% endraw %}
+                :children-ref="'{{ EMPLOYEE_CHILDREN_REF }}'"
+                :fetch-url="'{{ EMPLOYEE_FETCH_URL }}'">
+            </item>
+        </ul>
     </div>
-    <ul v-show="open" v-if="isFolder">
-      <item
-        class="item"
-        v-for="(model, index) in model.children"
-        :key="index"
-        :model="model">
-      </item>
-      <li class="add" @click="addChild">+</li>
-    </ul>
-  </li>
-</script>
-
-<p>(You can double click on an item to turn it into a folder.)</p>
-
-<!-- the demo root element -->
-<ul id="demo">
-  <item
-    class="item"
-    :model="treeData">
-  </item>
-</ul>
+{% endblock %}

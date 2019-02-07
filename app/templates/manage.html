@@ -64,7 +64,7 @@
         </div>
     {% endblock %}
 
-    <a href="{{ url_for('employee') }}">Add new employee</a>
+    <a type="button" class="btn btn-success my-1" href="{{ url_for('employee') }}"><b>Add new employee</b></a>
     {% raw %}
         <!-- grid template -->
         <script type="text/x-template" id="grid-sortable-template">
@@ -98,7 +98,7 @@
             </table>
         </script>
 
-        <!-- root element -->
+        <!-- Vue root element -->
         <div id="employee_table">
             <form id="search" @submit.prevent="runSearch">
                 <h3>Search</h3>

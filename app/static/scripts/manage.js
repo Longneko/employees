@@ -96,7 +96,7 @@ $(document).ready(function(){
       }
     })
 
-    // Employee table vue app
+    // Vue root element
     var employee_table = new Vue({
       el: '#employee_table',
       data: {

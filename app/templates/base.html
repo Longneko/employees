@@ -20,8 +20,8 @@
          <nav class="navbar navbar-expand-md navbar-light bg-light border">
             <span class="navbar-brand mb-0 h1"> Employees:</span>
             <ul class="navbar-nav mr-auto">
-                <a class="nav-item mx-1" href="{{ url_for('index') }}">Hierarchy</a>
-                <a class="nav-item mx-1" href="{{ url_for('manage') }}">Manage Employees</a>
+                <a class="nav-item mx-2" href="{{ url_for('index') }}">Hierarchy</a>
+                <a class="nav-item mx-2" href="{{ url_for('manage') }}">Manage</a>
             </ul>
             <ul class="navbar-nav ml-auto">
                 {% if current_user.is_anonymous %}
