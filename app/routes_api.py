@@ -1,4 +1,3 @@
-import operator
 from flask import render_template, redirect, flash, url_for, request, jsonify
 from flask_login import login_required
 from werkzeug.urls import url_parse
@@ -69,17 +68,13 @@ def api_get_object(classname):
         cls = allowed_models[classname]
     except KeyError:
         return jsonify(errors=['Unknown object type']), 400
-    
+
+    request_data = next((x for x in [request.get_json(), request.form, request.args] if x), {})
+    query_data = {key: val for key, val in request_data.items() if val != ''
+        and key not in exclude_fields}
+        
     filters = []
     filter_bys = {}
-    
-    if request.method == 'POST':
-        query_data = {key: val for key, val in request.form.items() if val != ''
-            and key not in exclude_fields}
-    else:
-        query_data = {key: val for key, val in request.args.items() if val != ''
-            and key not in exclude_fields}
-
     for key, val in query_data.items():
         if key.startswith('_'):
             col = getattr(cls, key[1:])
@@ -88,5 +83,39 @@ def api_get_object(classname):
             filter_bys[key] = val
 
     entries = cls.query.filter_by(**filter_bys).filter(*filters).all()
-
     return jsonify(entries), 200
+
+
+@app.route(API_PUBLIC_PREFIX + '/get/<string:classname>', methods=['GET', 'POST'])
+def api_public_get_object(classname):
+    '''A limited version of api_get_object method available for anonymous users. Return object
+    dictionaries as well as search parameters are restricted to specific fields.
+    '''
+    allowed_models = {
+        'employee': Employee
+    }
+    try:
+        cls = allowed_models[classname]
+    except KeyError:
+        return jsonify(errors=['Unknown or forbidden object type']), 400
+
+    allowed_fields = {
+        Employee: ['id', 'name', 'position', 'subordinates_id', 'supervisor_id']
+    }
+
+    request_data = next((x for x in [request.get_json(), request.form, request.args] if x), {})
+    query_data = {key: val for key, val in request_data.items() if val != ''
+        and key not in exclude_fields and key in allowed_fields[cls]}
+        
+    filters = []
+    filter_bys = {}
+    for key, val in request_data.items():
+        if key.startswith('_'):
+            col = getattr(cls, key[1:])
+            filters.append(col.like('%' + str(val) + '%'))
+        else:
+            filter_bys[key] = val
+
+    entries = cls.query.filter_by(**filter_bys).filter(*filters).all()
+    result = [e.toJSONifiable(include_fields=allowed_fields[cls]) for e in entries]
+    return jsonify(result), 200

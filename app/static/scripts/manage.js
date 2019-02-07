@@ -29,14 +29,6 @@ $(document).ready(function(){
             type: 'POST',
             url: url,
             data: form.serialize(),
-            // success: function(data) {
-            //     $.ajax({
-            //         type: 'POST',
-            //         url: API_URL_FLASH,
-            //         data: {msg: 'Employee deleted successfully!', category: 'success'},
-            //         complete: function() { location.reload(); $(document).scrollTop(0); },
-            //     });
-            // },
             success: function() {
                 employee_table.runSearch();
                 $('#' + MODAL_DELETE_ID).modal('hide');
@@ -53,8 +45,6 @@ $(document).ready(function(){
         e.preventDefault();
     });
 
-
-    // Vue components:
 
     // Vue fitlers:
     Vue.filter('capitalize', function (value) {

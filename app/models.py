@@ -13,12 +13,27 @@ class ModelJSONifiable():
         cls = self.__class__
         return [str(rel)[len(cls.__name__)+1:] for rel in inspect(cls).relationships]
 
-    def toJSONifiable(self, no_relationships=True):
-        """Returns a DB Model child object as dictionary. Excludes relationship attributes if
-        no_relationships == True (to avoid circular references)."""
+    def toJSONifiable(self, no_relationships=True, include_fields=[], exclude_fields=[]):
+        """Returns a DB Model child object as dictionary. 
+        :param no_relationships: A boolean, relationship attributes will be excluded if True 
+            (recommended to avoid circular references)
+        :param include_fields: A list of strings, if not empty, the dictionary will consist of these
+            attributes only. If attribute is not found, the string is ignored. Takes precedence over
+            exclude_fields. If relationships are in this list, they will be included.
+        :param exclude_fields: A list of strings, if not empty, the dictionary will not include these
+            attributes. Ignored if include_fields list is not empty.
+        """
         relationships = [] if no_relationships else self.relationships()
-        d = {key: val for key, val in self.__dict__.items() if not key.startswith('_')
-            and not key in relationships}
+        if include_fields:
+            d = {}
+            for key in include_fields:
+                try:
+                    d[key] = self.__dict__[key]
+                except KeyError:
+                    pass
+        else:
+            d = {key: val for key, val in self.__dict__.items() if not key.startswith('_')
+                and not key in relationships and not key in exclude_fields}
         return d
 
 
@@ -54,14 +69,23 @@ class Employee(ModelJSONifiable, db.Model):
                 raise exceptions.HierarchyLoopError(self, supervisor)
         return supervisor
 
-    def toJSONifiable(self, no_relationships=True):
+    def toJSONifiable(self, no_relationships=True, include_fields=[], exclude_fields=[]):
         """Extends the corresponding ModelJSONifiable method by adding following fields:
           subordinates_id: list of the ids of the subordiantes
           supervisor: string representation of supervisor
         """
-        d = super().toJSONifiable(no_relationships=True)
-        d['subordinates_id'] = [s.id for s in self.subordinates]
-        d['supervisor'] = str(self.supervisor)
+        d = super().toJSONifiable(no_relationships=True, include_fields=[], exclude_fields=[])
+        if include_fields:
+            if 'subordinates_id' in include_fields:
+                d['subordinates_id'] = [s.id for s in self.subordinates]
+            if 'supervisor' in include_fields:
+                d['supervisor'] = str(self.supervisor)
+        else:
+            if not 'subordinates_id' in exclude_fields:
+                d['subordinates_id'] = [s.id for s in self.subordinates]
+            if not 'supervisor' in exclude_fields:
+                d['supervisor'] = str(self.supervisor)
+
         return d
 
     def __repr__(self):
