@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% set EMPLOYEE_FETCH_URL = url_for('api_public_get_object', classname='employee') %}
 {% set EMPLOYEE_CHILDREN_REF = 'subordinates_id' %}
+{% set EMPLOYEE_PARENT_REF = 'supervisor_id' %}
 
 {% block scripts scoped %}
     {{ super() }}
@@ -32,6 +33,7 @@
                     :key="index"
                     :model="model"
                     :children-ref="childrenRef"
+                    :parent-ref="parentRef"
                     :fetch-url="fetchUrl">
                 </item>
             </ul>
@@ -39,7 +41,7 @@
     </script>
 
     <div class="p-2">
-        <h2>Employee</h2>
+        <h2>Employee Hierarchy</h2>
         <!-- Vue root element -->
         <ul id="employee-tree">
             <item v-for="(item, index) in treeData"
@@ -48,6 +50,7 @@
                 :model="item"
         {% endraw %}
                 :children-ref="'{{ EMPLOYEE_CHILDREN_REF }}'"
+                :parent-ref="'{{ EMPLOYEE_PARENT_REF }}'"
                 :fetch-url="'{{ EMPLOYEE_FETCH_URL }}'">
             </item>
         </ul>

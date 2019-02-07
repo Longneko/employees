@@ -1,6 +1,7 @@
 from flask import render_template, redirect, flash, url_for, request, jsonify
 from flask_login import login_required
 from werkzeug.urls import url_parse
+from sqlalchemy import and_, or_
 from app import app, db
 from app.forms import EmployeeForm, EmployeeDeleteForm
 from app.models import Employee
@@ -10,6 +11,29 @@ API_PREFIX = '/api'
 API_PUBLIC_PREFIX = '/api_public'
 CSRF_TOKEN_NAME = 'csrf_token'
 exclude_fields = [CSRF_TOKEN_NAME, 'submit']
+
+def request_to_query(query_data, cls):
+    """Return an sqlalchemy query instance to be used in filter() method.
+    :param query_data: A dictionary, where keys and values are column names and filter values
+        respectively. Keys are combined as AND conditions. Values can be list of values, that will
+        be combined as OR conditions. Keys can be prefixed with underscore resulting in ILIKE filter
+        rather than '==' filter. 
+    :param cls: A class, Model class that is being queried.
+    """
+    filter_conditions = []
+    for key, val in query_data.items():
+        col = getattr(cls, key[1:] if key.startswith('_') else key)
+        values = val if isinstance(val, list) else [val]
+        or_conditions = []
+        for item in values:
+            if key.startswith('_'):
+                or_conditions.append(col.ilike('%' + str(item) + '%'))
+            else:
+                or_conditions.append(col==item)
+        filter_conditions.append(or_(*or_conditions))
+
+    return and_(*filter_conditions)
+
 
 @app.route(API_PREFIX + '/employee/delete', methods=['POST'])
 @login_required
@@ -73,16 +97,8 @@ def api_get_object(classname):
     query_data = {key: val for key, val in request_data.items() if val != ''
         and key not in exclude_fields}
         
-    filters = []
-    filter_bys = {}
-    for key, val in query_data.items():
-        if key.startswith('_'):
-            col = getattr(cls, key[1:])
-            filters.append(col.like('%' + str(val) + '%'))
-        else:
-            filter_bys[key] = val
-
-    entries = cls.query.filter_by(**filter_bys).filter(*filters).all()
+    query_data = request_to_query(query_data, cls)
+    entries = cls.query.filter(query_data).all()
     return jsonify(entries), 200
 
 
@@ -107,15 +123,7 @@ def api_public_get_object(classname):
     query_data = {key: val for key, val in request_data.items() if val != ''
         and key not in exclude_fields and key in allowed_fields[cls]}
         
-    filters = []
-    filter_bys = {}
-    for key, val in request_data.items():
-        if key.startswith('_'):
-            col = getattr(cls, key[1:])
-            filters.append(col.like('%' + str(val) + '%'))
-        else:
-            filter_bys[key] = val
-
-    entries = cls.query.filter_by(**filter_bys).filter(*filters).all()
+    query_data = request_to_query(query_data, cls)
+    entries = cls.query.filter(query_data).all()
     result = [e.toJSONifiable(include_fields=allowed_fields[cls]) for e in entries]
     return jsonify(result), 200

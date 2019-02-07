@@ -1,3 +1,5 @@
+var employee_tree
+
 $(document).ready(function(){
     // Vue components:
     // item component
@@ -6,6 +8,7 @@ $(document).ready(function(){
         props: {
             model: Object,
             childrenRef: String,
+            parentRef: String,
             fetchUrl: String
         },
         data: function() {
@@ -33,27 +36,30 @@ $(document).ready(function(){
             },
             fetchChildren: function() {
                 var that = this
+                var query = {};
+                if ( this.parentRef ) {
+                    query[this.parentRef] = this.model.id
+                } else {
+                    query['id'] = this.model[this.childrenRef]
+                }
+
                 if ( !this.childrenLoaded ) {
-                    for ( var child_id of this.model[this.childrenRef] ) {
-                        $.ajax({
-                            type: 'POST',
-                            url: that.fetchUrl,
-                            data: JSON.stringify({
-                                id: child_id
-                            }),
-                            contentType: 'application/json; charset=utf-8', 
-                            success: function(data) {
-                                that.children.push(data[0])
-                            }
-                        })
-                    }
+                    $.ajax({
+                        type: 'POST',
+                        url: that.fetchUrl,
+                        data: JSON.stringify(query),
+                        contentType: 'application/json; charset=utf-8', 
+                        success: function(data) {
+                            that.children = that.children.concat(data)
+                        }
+                    })
                 }
             }
         }
     });
 
     // Vue Root element
-    var employee_tree = new Vue({
+    employee_tree = new Vue({
         el: '#employee-tree',
         data: {
             treeData: []
