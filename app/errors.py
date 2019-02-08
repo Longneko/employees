@@ -1,13 +1,15 @@
 from flask import render_template, request, jsonify
 from app import app
-from app.routes_api import API_PREFIX
+from app.routes_api import API_PREFIX, API_PUBLIC_PREFIX
 from app.json_encoder import CustomJSONEncoder
 
 def is_api(request):
-    return request.path.startswith(API_PREFIX)
+    return any(request.path.startswith(x) for x in [API_PREFIX, API_PUBLIC_PREFIX])
 
 @app.errorhandler(500)
 def internal_error(e):
+    db.session.rollback()
+
     if is_api(request):
         exceptions = [
             {

@@ -64,6 +64,8 @@ class Employee(ModelJSONifiable, db.Model):
 
     @validates('supervisor')
     def validate_supervisor(self, key, supervisor):
+        if self == supervisor:
+            raise exceptions.HierarchyLoopError(self, supervisor)
         for sub in self._get_all_subordinates():
             if sub == supervisor:
                 raise exceptions.HierarchyLoopError(self, supervisor)

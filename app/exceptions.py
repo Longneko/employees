@@ -9,6 +9,9 @@ class EmployeeError(Exception):
 class HierarchyLoopError(EmployeeError):
     """Raised when employee has their any level subordinate set as supervisor creating a loop"""
     def __init__(self, employee, supervisor):
-        msg = 'Cannot set subordinate ({}) as supervisor for ({})'.format(supervisor, employee)
+        if employee == supervisor:
+            msg = 'Cannot set self ({}) as supervisor)'.format(employee)
+        else:
+            msg = 'Cannot set subordinate ({}) as supervisor for ({})'.format(supervisor, employee)
         super().__init__(employee, msg)
         self.supervisor = supervisor
