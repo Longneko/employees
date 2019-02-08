@@ -8,7 +8,7 @@ With [Python PIP](https://pypi.org/project/pip/) installed run:
 ```bash
 pip install -r requirements.txt
 ```
-####For MySQL DB
+#### For MySQL DB
 If used with MySQL as opposed to the default SQLite, also requires MySQL client:
 ```bash
 pip install -r optional-requirements.txt
