@@ -27,5 +27,5 @@ class CustomJSONEncoder(JSONEncoder):
     def date(self, date, format='%Y-%m-%d'):
         return date.strftime(format)
 
-    def datetime(self, datetime, format='%Y-%m-%dT%H:%M:%S'):
+    def datetime(self, datetime, format='%Y-%m-%d %H:%M:%S'):
         return datetime.strftime(format)

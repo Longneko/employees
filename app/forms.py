@@ -39,7 +39,7 @@ class EmployeeForm(FlaskForm):
     id = IntegerField('ID', widget=HiddenInput(), validators=[NumberRange(min=1), Optional()])
     full_name = StringField('Full name', validators=[DataRequired()])
     position = StringField('Position', validators=[DataRequired()])
-    hire_date = DateField('Hire date', validators=[DataRequired()])
+    hire_date = DateField('Hire date', format='%Y-%m-%d', validators=[DataRequired()])
     salary = IntegerField('Salary', validators=[DataRequired(), NumberRange(min=0)])
     supervisor_id = IntegerField('Supervisor ID', validators=[NumberRange(min=1), Optional()])
     submit = SubmitField('Submit')

@@ -1,0 +1,2 @@
+# Optional package that is required if MySQL DB is used.
+mysqlclient==1.4.1

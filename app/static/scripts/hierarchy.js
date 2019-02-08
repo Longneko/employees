@@ -1,4 +1,5 @@
-var employee_tree
+// Root vue element
+var employee_tree;
 
 $(document).ready(function(){
     // Vue components:
