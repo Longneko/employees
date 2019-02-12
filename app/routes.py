@@ -9,8 +9,7 @@ from app.models import Employee, User
 @app.route('/')
 @app.route('/index')
 def index():
-    top_management = Employee.query.filter_by(supervisor_id=None).all()
-    return render_template('hierarchy.html', title='Hierarchy', employees=top_management)
+    return render_template('hierarchy.html', title='Hierarchy')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
