@@ -1,5 +1,24 @@
 # Employees
-This is a test assignment
+This was originally a test assignment written (mainly) on Flask + SQLAlchemyORM. It complies with the following requirements:
+### Madndatory:
+Create a webpage that displays an employee hierarchy as a tree structure containing the following data:
+* Name
+* Position
+* Date of hire
+* Salary
+* Each employee has only 1 supervisor
+* The database must contain at least 50,000 employees and 5 levels of hierarchy.
+### Optional:
+1. Create the database using Flask migrations.
+2. Use Twitter Bootstrap to create basic styles for your page.
+3. Create a separate page to display a list of employees with all the employees’ information.
+4. Extend task #3 with the ability to sort and search by any field without reloading the page (e.g. by using ajax).
+5. Using standard Flask functions, add user authentication and create a section available only for registered users.
+6. Transfer the functionality developed in tasks 3 and 6 to a section accessible only to registered users.
+7. In the section accessible only to registered users, implement the remaining CRUD operations for employee records, including changing the superviosr.
+8. Implement lazy loading for the employees tree.
+
+
 
 ## Installing
 Run following commands (in that order recommended)
