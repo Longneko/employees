@@ -1,5 +1,5 @@
 from flask import render_template, request, jsonify
-from app import app
+from app import app, db
 from app.routes_api import API_PREFIX, API_PUBLIC_PREFIX
 from app.json_encoder import CustomJSONEncoder
 
