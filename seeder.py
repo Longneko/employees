@@ -1,3 +1,4 @@
+import os
 import random
 from datetime import date
 from faker import Faker
@@ -8,7 +9,7 @@ fake = Faker()
 
 class DbSeeder(object):
     DEFAULTS = {
-        'positions_path': r'seeding\positions.txt',
+        'positions_path': os.path.join("seeding","positions.txt"),
     }
 
     def __init__(self, session=None, positions=None):
