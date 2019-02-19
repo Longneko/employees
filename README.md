@@ -41,7 +41,7 @@ npm install
 ```
 This installs the bower package manager to handle the UI necessary components. Then run:
 ```bash
-bower install
+node_modules/bower/bin/bower install
 ```
 
 ## Quickstart
